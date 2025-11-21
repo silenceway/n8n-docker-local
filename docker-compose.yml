@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: n8nn
+    restart: unless-stopped
+    networks:
+      - n8n_network
+    ports:
+      # Este puerto solo es necesario si quieres acceder a n8n desde tu máquina local directamente (navegador)
+      - "5678:5678" 
+    environment:
+      # >>> CAMBIA ESTO por tu URL fija de Cloudflare <<<
+      WEBHOOK_URL: https://n8n.tudominio.com
+      N8N_PROTOCOL: https
+      TZ: America/Bogota
+      # Añade aquí tus variables de base de datos si las usas (DB_TYPE, DB_HOST, etc.)
+    volumes:
+      # Mantén tus datos persistentes aquí
+      - n8n_data:/home/node/.n8n
+
+  cloudflare_tunnel:
+    image: cloudflare/cloudflared:latest
+    container_name: cloudflare_tunnel
+    restart: unless-stopped
+    networks:
+      - n8n_network
+    command: tunnel run
+    environment:
+      # >>> CAMBIA ESTO por tu token de túnel persistente <<<
+      TUNNEL_TOKEN: <TU_TOKEN_DEL_TUNEL_PERSISTENTE>
+
+# Define la red y los volúmenes
+networks:
+  n8n_network:
+    # Se crea una red interna personalizada para que se comuniquen por nombre (n8nn y cloudflare_tunnel)
+    external: true # Usa la red que ya creaste manualmente: docker network create n8n_network
+
+volumes:
+  n8n_data:
+    driver: local
+
+

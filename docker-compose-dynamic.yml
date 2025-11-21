@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: n8n
+    restart: unless-stopped
+    networks:
+      - n8n_network
+    # Exponemos 5678 en el host solo para la interfaz web, los webhooks usarán el túnel
+    ports:
+      - "5678:5678" 
+    # Dejamos WEBHOOK_URL vacío por ahora, será inyectado por el script
+    environment:
+      WEBHOOK_URL: "" 
+      N8N_PROTOCOL: https
+      TZ: America/Bogota
+    volumes:
+      - ./n8n_data:/home/node/.n8n
+
+  cloudflare_tunnel:
+    image: cloudflare/cloudflared:latest
+    container_name: cloudflare_tunnel
+    restart: "no" # No reiniciar automáticamente, lo maneja el script
+    networks:
+      - n8n_network
+    # Comando simple para que sea fácil de manejar desde el script del host
+    command: tunnel --url http://n8n:5678
+
+# Define la red y los volúmenes
+networks:
+  n8n_network:
+    external: true
+
+volumes:
+  n8n_data:
+    driver: local
+
+
