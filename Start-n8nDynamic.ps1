@@ -43,7 +43,7 @@ docker rm $N8NContainerName | Out-Null
 
 docker run -d --name $N8NContainerName `
   --network $DockerNetworkName `
-  -p "$N8NLocalPort:$N8NLocalPort" `
+  -p "${N8NLocalPort}:${N8NLocalPort}" `
   -e WEBHOOK_URL=$DynamicURL `
   -e N8N_PROTOCOL=https `
   -e TZ="America/Bogota" `
